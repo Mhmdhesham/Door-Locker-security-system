@@ -1,0 +1,41 @@
+22:14:18 **** Incremental Build of configuration Debug for project MC2 ****
+make all 
+Building file: ../MCU2.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega16 -DF_CPU=8000000UL -MMD -MP -MF"MCU2.d" -MT"MCU2.o" -c -o "MCU2.o" "../MCU2.c"
+In file included from ../MCU2.h:17,
+                 from ../MCU2.c:7:
+d:/winavr/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../MCU2.c
+ 
+Building target: MC2.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,MC2.map -mmcu=atmega16 -o "MC2.elf"  ./MCU2.o ./buzzer.o ./dc_motor.o ./external_eeprom.o ./gpio.o ./timer.o ./twi.o ./uart.o   
+Finished building target: MC2.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S MC2.elf  >"MC2.lss"
+Finished building: MC2.lss
+ 
+Create Flash image (ihex format)
+avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex MC2.elf  "MC2.hex"
+Finished building: MC2.hex
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega16 MC2.elf
+AVR Memory Usage
+----------------
+Device: atmega16
+
+Program:   11166 bytes (68.2% Full)
+(.text + .data + .bootloader)
+
+Data:        304 bytes (29.7% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+
+22:14:19 Build Finished. 0 errors, 1 warnings. (took 952ms)
+

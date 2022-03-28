@@ -1,0 +1,284 @@
+ /******************************************************************************
+ *
+ * door lock security system
+ *
+ * File Name: main.c
+ *
+ * Description: Main program
+ *
+ * Author: Mohamed Hesham
+ *
+ *******************************************************************************/
+#include "main.h"
+/*uint8 recievecommand(void)
+{
+	while(UART_recieveByte() != START){};
+	_delay_ms(130);
+	UART_sendByte(START);
+	_delay_ms(130);
+	operation=UART_recieveByte();
+	_delay_ms(130);
+	UART_sendByte(END);
+	_delay_ms(130);
+	return operation;
+}
+void sendoperation(uint8 operation)
+{
+	UART_sendByte(START);
+	_delay_ms(130);
+	while(UART_recieveByte() != START){};
+
+	LCD_displayString("HELLO THIEF");
+	UART_sendByte(operation);
+
+	while(UART_recieveByte() != END){};
+
+}*/
+void SendPassword(uint8 a_arr[])
+{
+
+	for(uint8 i=0;i<NUMBER_CHAR;i++)
+	{
+		UART_sendByte(a_arr[i]);
+
+	}
+	while(UART_recieveByte() != END){};
+
+}
+
+void fillinpassword(uint8 a_arr[])
+{
+	uint8 counter=0;
+
+	for(counter=0;counter<NUMBER_CHAR;counter++)
+	{
+		g_key=KEYPAD_getPressedKey();
+		a_arr[counter]=g_key;
+		LCD_displayCharacter('*');
+		_delay_ms(500);
+	}
+
+	while(g_key!='=')
+	{
+		g_key=KEYPAD_getPressedKey();
+	}
+
+}
+
+void alarmdelay()
+{
+	g_tick++;
+	if(g_tick == TIMER_TICKS_1MINUTE_STOP)
+		{
+			TIMER_deInit(TIMER0);
+			g_tick=0;
+		}
+
+}
+void countermotor(void)
+{
+	g_tick++;
+
+	if(g_tick==TIMER_TICKS_15SEC_STOP)
+	{
+		TIMER_deInit(TIMER0);
+		g_tick=0;
+	}
+
+}
+void ALERTscreen(void)
+{
+
+	TIMER_ConfigType TIMERINIT={0,NORMAL0,0,0,F0_CPU_1024};
+	LCD_clearScreen();
+	TIMER_init(&TIMERINIT);
+	TIMER_setCallBack(alarmdelay);
+
+	while(g_tick != TIMER_TICKS_1MINUTE)
+	{
+		LCD_displayString("HELLO THIEF");
+	}
+	if(g_tick==TIMER_TICKS_1MINUTE_STOP)
+	{
+		error=0;
+	}
+
+
+}
+
+int main()
+{
+	SREG |= (1<<7);
+	UART_init(&UARTINIT);
+		LCD_init();
+
+
+	while(1)
+	{
+if(checknew==1)
+{   LCD_clearScreen();
+	LCD_moveCursor(0,0);
+LCD_displayString("ENTER password");
+LCD_moveCursor(1,0);
+	fillinpassword(newwpassword);
+	//sendoperation(storepassword);
+	UART_sendByte(START);
+		while(UART_recieveByte() != START){};
+		UART_sendByte(storepassword);
+		UART_sendByte(START);
+				while(UART_recieveByte() != START){};
+		SendPassword(newwpassword);
+	 LCD_clearScreen();
+	LCD_moveCursor(0,0);
+	LCD_displayString("ENTER repassword");
+	LCD_moveCursor(1,0);
+	fillinpassword(reepassword);
+	//sendoperation(checkpassword);
+	UART_sendByte(START);
+
+			while(UART_recieveByte() != START){};
+			UART_sendByte(checkpassword);
+			UART_sendByte(START);
+					while(UART_recieveByte() != START){};
+	SendPassword(reepassword);
+	while(UART_recieveByte() != START){};
+			UART_sendByte(START);
+	compareres=UART_recieveByte();
+	if(compareres==FALSE)
+	{
+		LCD_clearScreen();
+		LCD_displayStringRowColumn(0,0,"NOT MATCHED");
+		_delay_ms(2000);
+
+	}
+	else
+	{
+		checknew=0;
+	}
+}
+else
+{
+
+LCD_clearScreen();
+LCD_displayStringRowColumn(0,0,"+:OPEN DOOR");
+LCD_displayStringRowColumn(1,0,"-:CHANGE PASSWORD");
+_delay_ms(3000);
+pressedkey=KEYPAD_getPressedKey();
+switch(pressedkey)
+{
+case '-':
+{
+	LCD_clearScreen();
+	LCD_displayStringRowColumn(0,0," OLD PASSWORD is");
+	fillinpassword(origgpassword);
+	//sendoperation(checkpassword);
+	UART_sendByte(START);
+	SendPassword(origgpassword);
+	while(UART_recieveByte() != START){};
+				UART_sendByte(START);
+		compareres=UART_recieveByte();
+	if(compareres==FALSE)
+	{
+		error++;
+		LCD_clearScreen();
+				LCD_displayStringRowColumn(0,0,"NOT MATCHED");
+				_delay_ms(3000);
+
+	}
+	else
+		{
+		error=0;
+		fillinpassword(newwpassword);
+		//sendoperation(trialpassword);
+		UART_sendByte(START);
+
+		SendPassword(newwpassword);
+		fillinpassword(reepassword);
+		//sendoperation(checkpassword);
+
+		SendPassword(reepassword);
+		while(UART_recieveByte() != START){};
+				UART_sendByte(START);
+		compareres=recievecommand();
+if(compareres==TRUE)
+{
+	error=0;
+	//sendoperation(storepassword);
+
+	SendPassword(newwpassword);
+}
+else
+{
+	error++;
+	LCD_clearScreen();
+			LCD_displayStringRowColumn(0,0,"NOT MATCHED");
+			_delay_ms(3000);
+}
+		}
+
+	break;
+}
+case '+':
+{
+	LCD_clearScreen();
+		LCD_displayStringRowColumn(0,0," OLD PASSWORD is");
+	fillinpassword(origgpassword);
+//sendoperation(checkpassword);
+
+	SendPassword(origgpassword);
+if(recievecommand()==TRUE)
+{
+	error=0;
+
+	//sendoperation(openmotor);
+
+	LCD_clearScreen();
+	TIMER_init(&TIMERINIT);
+	TIMER_setCallBack(countermotor);
+	while(g_tick != TIMER_TICKS_15SEC)
+	{
+LCD_displayStringRowColumn(0,0,"OPENNING DOOR");
+	}
+	if(g_tick == TIMER_TICKS_15SEC)
+	{
+		LCD_clearScreen();
+		_delay_ms(4000);
+	}
+TIMER_init(&TIMERINIT);
+TIMER_setCallBack(countermotor);
+while(g_tick != TIMER_TICKS_15SEC)
+{
+LCD_displayStringRowColumn(0,0,"CLOSING DOOR");
+}
+}
+else
+{ error++;
+	LCD_clearScreen();
+			LCD_displayStringRowColumn(0,0,"NOT MATCHED");
+			_delay_ms(3000);
+}
+_delay_ms(3000);
+	break;
+}
+default:
+{
+	LCD_clearScreen();
+	LCD_displayStringRowColumn(0,0,"WRONG CHOICE ");
+	LCD_displayStringRowColumn(1,0,"TRY AGAIN");
+	_delay_ms(4000);
+}
+
+}
+
+}
+if(error>=3)
+{
+	//sendoperation(errormessage);
+
+	ALERTscreen();
+	_delay_ms(3000);
+}
+	}
+}
+
+
